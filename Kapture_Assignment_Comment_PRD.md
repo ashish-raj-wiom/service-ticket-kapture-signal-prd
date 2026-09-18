@@ -33,15 +33,15 @@ It also leaves unchanged the **blind window before anyone is assigned**. A resto
 
 | ID | Story | MUST | MUST NOT |
 |---|---|---|---|
-| R1 | As a call-centre agent handling a callback, I want the ticket to tell me who is working on it, so that I can answer the customer instead of phoning the CSP. | **(a)** Add a comment to the Kapture ticket on every assign action — the CSP taking the job himself, assigning a technician, swapping to a different technician, or recalling it off one. **(b)** Name the person and say whether they are the CSP or a technician. **(c)** Add one comment per action: an action that reaches the system more than once — a double tap, a retry, a redelivered event — still adds one. **(d)** Do this for every service ticket, restore and shifting alike. | **(a)** Write anything while the ticket sits unclaimed. **(b)** Add two comments for one action. **(c)** Stay silent on a real action because the person assigned happens to be unchanged. |
+| R1 | As a call-centre agent handling a callback, I want the ticket to tell me who is working on it, so that I can answer the customer instead of phoning the CSP. | **(a)** Add a comment to the Kapture ticket on every assign action — the CSP taking the job himself, assigning a technician, swapping to a different technician, or recalling it off one. **(b)** Write the comment in one fixed form — `Job assigned — <name> (<role>)` — where role is `Partner` when the CSP took the job himself and `Technician` when he assigned one. The same form serves a first assignment, a swap and a recall. ⚠️ *AI GENERATED — review* **(c)** Add one comment per action: an action that reaches the system more than once — a double tap, a retry, a redelivered event — still adds one. **(d)** Do this for every service ticket, restore and shifting alike. | **(a)** Write anything while the ticket sits unclaimed. **(b)** Add two comments for one action. **(c)** Stay silent on a real action because the person assigned happens to be unchanged. |
 
 | AC | Given / When / Then | Verifies | Status |
 |---|---|---|---|
-| AC-R1-1 | **Given** restore ticket `1789100000000000` with no assignment comment on it, **When** CSP Ramesh Kumar accepts the job at 09:31, **Then** one comment is added to that Kapture ticket naming Ramesh Kumar and stating he is the CSP. | R1a · R1b | Settled |
-| AC-R1-2 | **Given** ticket `1789100000000000` carrying one comment naming Ramesh Kumar as CSP from 09:31, **When** Ramesh assigns technician Imran Sheikh at 09:48, **Then** a further comment is added naming Imran Sheikh and stating he is a technician. | R1a · R1b | Settled |
-| AC-R1-3 | **Given** ticket `1789100000000000` with Imran named on the newest comment, **When** Ramesh swaps the job to technician Vikas Yadav at 11:02, **Then** a further comment is added naming Vikas Yadav as a technician. | R1a | Settled |
-| AC-R1-4 | **Given** ticket `1789100000000000` with Imran named on the newest comment, **When** Ramesh recalls the job off Imran at 11:02 and takes it himself, **Then** a further comment is added naming Ramesh Kumar and stating he is the CSP. | R1a · R1b | Settled |
-| AC-R1-5 | **Given** shifting ticket `1789100000000001` with no assignment comment on it, **When** Ramesh assigns technician Imran Sheikh to it at 09:48, **Then** a comment is added naming Imran Sheikh and stating he is a technician, in the same form as on a restore ticket. | R1d | Settled |
+| AC-R1-1 | **Given** restore ticket `1789100000000000` with no assignment comment on it, **When** CSP Ramesh Kumar accepts the job at 09:31, **Then** one comment is added to that Kapture ticket reading `Job assigned — Ramesh Kumar (Partner)`. | R1a · R1b | Settled |
+| AC-R1-2 | **Given** ticket `1789100000000000` carrying one comment naming Ramesh Kumar as CSP from 09:31, **When** Ramesh assigns technician Imran Sheikh at 09:48, **Then** a further comment is added reading `Job assigned — Imran Sheikh (Technician)`. | R1a · R1b | Settled |
+| AC-R1-3 | **Given** ticket `1789100000000000` with Imran named on the newest comment, **When** Ramesh swaps the job to technician Vikas Yadav at 11:02, **Then** a further comment is added reading `Job assigned — Vikas Yadav (Technician)`. | R1a | Settled |
+| AC-R1-4 | **Given** ticket `1789100000000000` with Imran named on the newest comment, **When** Ramesh recalls the job off Imran at 11:02 and takes it himself, **Then** a further comment is added reading `Job assigned — Ramesh Kumar (Partner)`. | R1a · R1b | Settled |
+| AC-R1-5 | **Given** shifting ticket `1789100000000001` with no assignment comment on it, **When** Ramesh assigns technician Imran Sheikh to it at 09:48, **Then** a comment is added reading `Job assigned — Imran Sheikh (Technician)` — the same form as on a restore ticket. | R1d | Settled |
 | AC-R1-6 | **Given** ticket `1789100000000000` open and unclaimed since 09:14, **When** two hours pass with no CSP action, **Then** no assignment comment exists on that Kapture ticket. | R1 MUST NOT (a) · G3 | Settled |
 | AC-R1-7 | **Given** Imran was named on a comment at 09:31, **When** Ramesh assigns Imran again at 11:40 as a fresh action, **Then** a further comment naming Imran is added — an unchanged person is not a reason for silence. | R1c · R1 MUST NOT (c) | Settled |
 | AC-R1-8 | **Given** ticket `1789100000000000` already resolved in Kapture at 12:15, **When** an assign action from 12:14 reaches this feature at 12:18, **Then** the comment is still added to the ticket. ⚠️ *AI GENERATED — review* | R1a | Settled |
@@ -55,7 +55,7 @@ It also leaves unchanged the **blind window before anyone is assigned**. A resto
 | AC | Given / When / Then | Verifies | Status |
 |---|---|---|---|
 | AC-R2-1 | **Given** ticket `1789100000000000` carrying comments naming Imran Sheikh at 09:48 then Vikas Yadav at 11:02, **When** agent Priya Nair opens the ticket at 11:30, **Then** the newest assignment comment names Vikas Yadav. | R2a · G1 | Settled |
-| AC-R2-2 | **Given** the swap to Vikas Yadav at 11:02, **When** its comment is added, **Then** that comment names Vikas Yadav and names neither Ramesh Kumar nor Imran Sheikh. | R2 MUST NOT | Settled |
+| AC-R2-2 | **Given** the swap to Vikas Yadav at 11:02, **When** its comment is added, **Then** that comment reads `Job assigned — Vikas Yadav (Technician)` and names neither Ramesh Kumar nor Imran Sheikh. | R2 MUST NOT | Settled |
 
 ---
 
@@ -130,6 +130,7 @@ No state management: behaviour is fully specified by §2 and the flow chart abov
 | Assign action | Any CSP action that sets or changes the assignee: taking the job himself, assigning a technician, swapping to a different technician, or recalling it off one. | CSP execution |
 | Assignment comment | The comment this feature adds to a Kapture ticket, naming the assignee and their role. The only thing this feature writes anywhere. | — |
 | Call-centre agent | The person handling a customer call in Kapture. Reads the ticket; does not work the job. | Support/Ops |
+| Partner | What a CSP is called on the Kapture side, and the only word for them the comment uses. The rest of this document says CSP, which is the word the CSP-side services use. The two are the same person; the comment uses the agent's word on purpose. | Support/Ops |
 | Kapture | The CRM the call centre works in. Holds the ticket the customer's complaint was raised as, its status, queue and comment thread. | Support/Ops |
 | Task family | Whether a job is a restore (a fault to fix) or a shifting (a connection to move). Both are service tickets and both are in scope. | CSP execution |
 | Blind window | The stretch between a ticket reaching the CSP and the first assign action on it — a median 131 minutes, during which nobody is assigned and this feature writes nothing. | — |
@@ -159,6 +160,7 @@ What the platform must be able to do for this feature to exist. Whether these ar
 | Location (section · ID) | What was generated | Basis |
 |---|---|---|
 | §1 · Objective | "without phoning the CSP to find out" | Put to you as a proposed objective and not corrected. The feature you described is the comment; the outcome behind it — the agent stops chasing — is inferred. |
+| §2 · R1b | The comment's fixed wording, `Job assigned — <name> (<role>)`, and the choice of `Partner` over `CSP` | You said the comment must carry name and role, not what it should say. The form is mine. `Partner` is not: it is the word the Kapture-facing code uses 44 times, against zero for `CSP`. |
 | §2 · AC-R1-8 | A comment whose action preceded closure is still added after the ticket is resolved in Kapture | You chose "every assignment comments" and said nothing about a ticket already closed. Adding keeps the record complete; the alternative is dropping it, which loses the trail. |
 
 ## Not asked
@@ -167,7 +169,6 @@ What the platform must be able to do for this feature to exist. Whether these ar
 |---|---|
 | Header · Reviewer | Which engineering lead reviews this. |
 | Header · Consulted | Which domains must be consulted — Support/Ops for the Kapture side, CSP execution for the event side. |
-| §2 · R1b | The exact wording of the comment. The PRD fixes what it must carry — name and role — not the sentence it is written in. |
 
 ## Overrides
 
