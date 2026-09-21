@@ -36,7 +36,7 @@ Blocking sign-off:
 
 1. No engineering reviewer named.
 2. No consulted domains named.
-3. The comment wording is drafted, not agreed — `Job assigned — <name> (Partner|Technician)`.
+3. The comment wording is drafted, not agreed — `Ticket assigned — <name> (Partner|Technician)`.
 
 ## The thing to know before reading
 
