@@ -22,7 +22,7 @@ It also leaves unchanged the **blind window before anyone is assigned**. A resto
 | ID | Guardrail | One line | Anchors |
 |---|---|---|---|
 | G1 | **The newest comment is the current person** | The most recent assignment comment on a ticket names whoever the latest assign action put on the job, so an agent reading down the thread ends on the truth. | R2a · AC-R2-1 · AC-GRD-1 |
-| G2 | **One action, one comment** | Each assign action adds exactly one comment — never two for a single action, and never none because the person happens to be unchanged. | R1c · AC-DUP-1 · AC-GRD-2 |
+| G2 | **One action, at most one comment** | No assign action ever adds two comments, and none is skipped because the person happens to be unchanged. A dropped push (AC-FAIL-1) is the only way an action adds none. | R1c · AC-DUP-1 · AC-GRD-2 |
 | G3 | **Never a comment without an assignment** | A comment appears only where a CSP actually assigned someone. Nothing is written while a ticket sits unclaimed. | R1 MUST NOT (a) · AC-R1-6 · AC-GRD-3 |
 
 ---
@@ -38,13 +38,13 @@ It also leaves unchanged the **blind window before anyone is assigned**. A resto
 | AC | Given / When / Then | Verifies | Status |
 |---|---|---|---|
 | AC-R1-1 | **Given** restore ticket `1789100000000000` with no assignment comment on it, **When** CSP Ramesh Kumar accepts the job at 09:31, **Then** one comment is added to that Kapture ticket reading `Job assigned — Ramesh Kumar (Partner)`. | R1a · R1b | Settled |
-| AC-R1-2 | **Given** ticket `1789100000000000` carrying one comment naming Ramesh Kumar as CSP from 09:31, **When** Ramesh assigns technician Imran Sheikh at 09:48, **Then** a further comment is added reading `Job assigned — Imran Sheikh (Technician)`. | R1a · R1b | Settled |
+| AC-R1-2 | **Given** ticket `1789100000000000` carrying one comment reading `Job assigned — Ramesh Kumar (Partner)` from 09:31, **When** Ramesh assigns technician Imran Sheikh at 09:48, **Then** a further comment is added reading `Job assigned — Imran Sheikh (Technician)`. | R1a · R1b | Settled |
 | AC-R1-3 | **Given** ticket `1789100000000000` with Imran named on the newest comment, **When** Ramesh swaps the job to technician Vikas Yadav at 11:02, **Then** a further comment is added reading `Job assigned — Vikas Yadav (Technician)`. | R1a | Settled |
 | AC-R1-4 | **Given** ticket `1789100000000000` with Imran named on the newest comment, **When** Ramesh recalls the job off Imran at 11:02 and takes it himself, **Then** a further comment is added reading `Job assigned — Ramesh Kumar (Partner)`. | R1a · R1b | Settled |
 | AC-R1-5 | **Given** shifting ticket `1789100000000001` with no assignment comment on it, **When** Ramesh assigns technician Imran Sheikh to it at 09:48, **Then** a comment is added reading `Job assigned — Imran Sheikh (Technician)` — the same form as on a restore ticket. | R1d | Settled |
 | AC-R1-6 | **Given** ticket `1789100000000000` open and unclaimed since 09:14, **When** two hours pass with no CSP action, **Then** no assignment comment exists on that Kapture ticket. | R1 MUST NOT (a) · G3 | Settled |
-| AC-R1-7 | **Given** Imran was named on a comment at 09:31, **When** Ramesh assigns Imran again at 11:40 as a fresh action, **Then** a further comment naming Imran is added — an unchanged person is not a reason for silence. | R1c · R1 MUST NOT (c) | Settled |
-| AC-R1-8 | **Given** ticket `1789100000000000` already resolved in Kapture at 12:15, **When** an assign action from 12:14 reaches this feature at 12:18, **Then** the comment is still added to the ticket. ⚠️ *AI GENERATED — review* | R1a | Settled |
+| AC-R1-7 | **Given** Imran was named on a comment at 09:31, **When** Ramesh assigns Imran again at 11:40 as a fresh action, **Then** a further comment reading `Job assigned — Imran Sheikh (Technician)` is added — an unchanged person is not a reason for silence. | R1c · R1 MUST NOT (c) | Settled |
+| AC-R1-8 | **Given** ticket `1789100000000000` already resolved in Kapture at 12:15, **When** a swap to Vikas Yadav made at 12:14 reaches this feature at 12:18, **Then** the comment is still added, reading `Job assigned — Vikas Yadav (Technician)`. ⚠️ *AI GENERATED — review* | R1a | Settled |
 
 ### R2 — Trust the newest comment
 
@@ -89,15 +89,16 @@ No state management: behaviour is fully specified by §2 and the flow chart abov
 
 | AC | Given / When / Then | Verifies | Status |
 |---|---|---|---|
-| AC-WF-1 | **Given** restore ticket `1789100000000000` reaching the CSP at 09:14, **When** Ramesh accepts at 09:31, assigns Imran at 09:48, swaps to Vikas at 11:02, and resolves at 12:15, **Then** the Kapture ticket carries three assignment comments in that order — Ramesh as CSP, Imran as technician, Vikas as technician — the resolution adds none, and the newest names Vikas. | R1a · R2a · G1 · G2 | Settled |
-| AC-WF-2 | **Given** ticket `1789100000000000` reaching the CSP at 09:14, **When** Ramesh accepts at 09:31 and resolves at 09:33, **Then** the ticket carries one assignment comment naming Ramesh, added before the resolution. | R1a | Settled |
-| AC-FAIL-1 | **Given** Ramesh assigns Imran at 09:48 and the push to Kapture fails, **When** the failure occurs, **Then** no comment appears on the ticket, no further attempt is made, and the ticket reads exactly as it did at 09:47. | R1a | Settled |
-| AC-FAIL-2 | **Given** the failed push from AC-FAIL-1, **When** Ramesh swaps to Vikas at 11:02, **Then** a comment naming Vikas is added — an earlier failure never stops a later action being written. | R1a · G2 | Settled |
-| AC-REG-1 | **Given** Ramesh assigns Imran to ticket `1789100000000000`, **When** the assignment happens, **Then** the CleverTap events `restore_task_accepted` and `restore_technician_assigned` fire exactly as they do today, unchanged in payload and timing (§6). | §1 Boundary | Settled |
+| AC-WF-1 | **Given** restore ticket `1789100000000000` reaching the CSP at 09:14, **When** Ramesh accepts at 09:31, assigns Imran at 09:48, swaps to Vikas at 11:02, and resolves at 12:15, **Then** the Kapture ticket carries three assignment comments in that order — `Job assigned — Ramesh Kumar (Partner)`, `Job assigned — Imran Sheikh (Technician)`, `Job assigned — Vikas Yadav (Technician)` — the resolution adds none, and the newest names Vikas. | R1a · R2a · G1 · G2 | Settled |
+| AC-WF-2 | **Given** ticket `1789100000000000` reaching the CSP at 09:14, **When** Ramesh accepts at 09:31 and resolves at 09:33, **Then** the ticket carries one assignment comment reading `Job assigned — Ramesh Kumar (Partner)`, added before the resolution. | R1a | Settled |
+| AC-FAIL-1 | **Given** Ramesh assigns Imran at 09:48 and the push to Kapture fails, **When** the failure occurs, **Then** the ticket's assignment-comment count is the same as it was at 09:47, no further push is attempted, and nothing on the ticket records that one was lost. | R1a | Settled |
+| AC-FAIL-2 | **Given** the failed push from AC-FAIL-1, **When** Ramesh swaps to Vikas at 11:02, **Then** a comment reading `Job assigned — Vikas Yadav (Technician)` is added — an earlier failure never stops a later action being written. | R1a · G2 | Settled |
+| AC-REG-1 | **Given** Ramesh assigns Imran to ticket `1789100000000000`, **When** the assignment happens, **Then** the CleverTap event `restore_technician_assigned` fires with the same payload and timing as it does today (§6). | §1 Boundary | Settled |
+| AC-REG-4 | **Given** ticket `1789100000000000` with no prior CSP action, **When** Ramesh accepts the job himself at 09:31, **Then** the CleverTap event `restore_task_accepted` fires with the same payload and timing as it does today (§6). | §1 Boundary | Settled |
 | AC-REG-2 | **Given** ticket `1789100000000000` with no prior CSP action, **When** Ramesh accepts it at 09:31, **Then** `complaint_tasks.first_response_at` is stamped 09:31 exactly as it is today (§6). | §1 Boundary | Settled |
 | AC-REG-3 | **Given** ticket `1789100000000000` at status OPEN on the Partner queue with priority LOW, **When** any assignment comment is added, **Then** its status, sub-status, priority and queue are unchanged (§6). | §1 Boundary | Settled |
 | AC-GRD-1 | **Given** every ticket that received two or more assignment comments over a full day of live traffic, **When** the release tester compares each ticket's newest comment against the last assign action recorded on that job, **Then** the two name the same person on every ticket. | G1 · R2a | Settled |
-| AC-GRD-2 | **Given** every assign action recorded over a full day of live traffic, **When** the release tester counts the assignment comments on each ticket, **Then** each action accounts for exactly one comment. | G2 · R1c | Settled |
+| AC-GRD-2 | **Given** every assign action recorded over a full day of live traffic, **When** the release tester counts the assignment comments on each ticket, **Then** no action accounts for more than one comment — an action may account for none, where its push was dropped (AC-FAIL-1), but never for two. | G2 · R1c | Settled |
 | AC-GRD-3 | **Given** every assignment comment added over a full day of live traffic, **When** the release tester traces each back to its job, **Then** each has an assign action behind it and none sits on a ticket that was never claimed. | G3 | Settled |
 | AC-DUP-1 | **Given** Ramesh taps assign-Imran once at 09:48:00, **When** that single action reaches the system five times within ten seconds, **Then** exactly one comment naming Imran exists on the Kapture ticket. | R1c · R1 MUST NOT (b) · G2 | Settled |
 
@@ -113,7 +114,7 @@ No state management: behaviour is fully specified by §2 and the flow chart abov
 
 | System / Service | Impact | Reference material | What was checked · ACs grounded on it |
 |---|---|---|---|
-| csp-tas-service (restore module) | Must publish the assign action outward with the Kapture ticket on it. Emits `EsRestoreTaskAccepted`, `EsRestoreTechnicianAssigned` and `EsRestoreTaskRecalled` today. | `restore/domain/event/outbound/*.java` | Only `EsRestoreTechnicianAssigned` carries `ticketId`; the accepted and recalled events carry none, and no event is emitted for a technician swap that reaches SRS. Those gaps must close for R1a · AC-R1-1 · AC-R1-3 · AC-R1-4 |
+| csp-tas-service (restore module) | Must publish the assign action outward with the Kapture ticket on it. Emits `EsRestoreTaskAccepted`, `EsRestoreTechnicianAssigned` and `EsRestoreTaskRecalled` today. | `restore/domain/event/outbound/*.java` | All three events are emitted today and all three are consumed by csp-notification-service, a swap included — `EsRestoreTechnicianAssigned` fires on a swap as well as a first assignment. Only that event carries `ticketId`; the accepted and recalled events carry none, and nothing consumes any of them toward Kapture. Both gaps must close for R1a · AC-R1-1 · AC-R1-3 · AC-R1-4 |
 | csp-support-resolution-service (SRS) | Must receive the assign action and pass it on. Eleven inbound event endpoints today. | `api/InboundEventController.java`; `domain/event/inbound/EsRestoreFirstResponseRecorded.java` | `ES_RESTORE_FIRST_RESPONSE_RECORDED` already arrives and stamps `first_response_at`, but it fires **once per job** and carries `triggering_action` with **no person** — so it cannot serve R1b or any later action · AC-REG-2 |
 | ticket-service-java | New producer of an existing Kapture push. Must stay the only route to Kapture. | `util/KaptureQueueMessageKey.java`; `service/handler/impl/AddCommentHandler.java` | `ADD_COMMENT` already exists and takes `comment`, `ticket_id` and `sub_status`; passing `sub_status` empty leaves the ticket's sub-status untouched · AC-R1-1 · AC-REG-3 |
 | Kapture | Receives the comment on the ticket thread. Status, sub-status, priority and queue must stay untouched. | Existing `ADD_COMMENT` integration, above | The push writes a comment only when `sub_status` is empty · AC-REG-3 |
@@ -147,7 +148,7 @@ What the platform must be able to do for this feature to exist. Whether these ar
 
 | Capability | Needed by |
 |---|---|
-| Observe every assign action on a job — take, assign, swap, recall — and carry the Kapture ticket with each. Today only the technician-assignment event carries the ticket, and a swap reaches nothing downstream at all. | R1a · §6 csp-tas-service |
+| Observe every assign action on a job — take, assign, swap, recall — and carry the Kapture ticket with each. Today only the technician-assignment event carries the ticket, and no consumer forwards any of them toward Kapture. | R1a · §6 csp-tas-service |
 | Resolve an assignee's name and whether they are the CSP or a technician, from their identifier, at the moment the comment is written. | R1b · §6 Gateway CSP user record |
 | Recognise one assign action reaching the system more than once, so a double tap or a retry writes a single comment — without mistaking two real actions for one. | R1c · G2 · AC-DUP-1 |
 | Add a comment to a Kapture ticket without touching its status, sub-status, priority or queue. | R1a · AC-REG-3 |
