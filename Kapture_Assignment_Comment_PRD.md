@@ -11,7 +11,7 @@
 
 **Objective.** A call-centre agent taking a callback can tell the customer who is working on their ticket, without phoning the CSP to find out. ⚠️ *AI GENERATED — review*
 
-**Boundary.** This spec governs a comment added to the Kapture ticket each time a CSP assigns someone to the job — himself, a technician, a different technician, or taking it back off one. It covers both task families, restore and shifting.
+**Boundary.** This spec governs a comment added to the Kapture ticket each time someone on the CSP is put on the ticket — a user taking it themselves, a technician assigned, a different technician swapped in, or the ticket taken back off one. It covers both task families, restore and shifting.
 
 It leaves unchanged: how a ticket is created, classified, deadlined, resolved or closed; the ticket's status, sub-status, priority and queue, none of which this feature touches; the CleverTap notifications these same assignment events already drive; and the first-response stamping SRS already performs.
 
@@ -33,19 +33,19 @@ It also leaves unchanged the **blind window before anyone is assigned**. A resto
 
 | ID | Story | MUST | MUST NOT |
 |---|---|---|---|
-| R1 | As a call-centre agent handling a callback, I want the ticket to tell me who is working on it, so that I can answer the customer instead of phoning the CSP. | **(a)** Add a comment to the Kapture ticket on every assign action — the CSP taking the job himself, assigning a technician, swapping to a different technician, or recalling it off one. **(b)** Write the comment in one fixed form — `Ticket assigned — <name> (<designation>)` ⚠️ *AI GENERATED — review* — where designation is the assignee's own, taken from their user record: `Owner`, `Manager`, `Manager+` or `Technician`. The record stores the third as `MANAGER_PLUS`; the comment shows `Manager+`. The same form serves a first assignment, a swap and a recall. **(c)** Add one comment per action: an action that reaches the system more than once — a double tap, a retry, a redelivered event — still adds one. **(d)** Do this for every service ticket, restore and shifting alike. | **(a)** Write anything while the ticket sits unclaimed. **(b)** Add two comments for one action. **(c)** Stay silent on a real action because the person assigned happens to be unchanged. |
+| R1 | As a call-centre agent handling a callback, I want the ticket to tell me who is working on it, so that I can answer the customer instead of phoning the CSP. | **(a)** Add a comment to the Kapture ticket on every assign action — a user on the CSP taking the ticket themselves, assigning a technician, swapping to a different technician, or recalling it off one. **(b)** Write the comment in one fixed form — `Ticket assigned — <name> (<designation>)` ⚠️ *AI GENERATED — review* — where designation is the assignee's own, taken from their user record: `Owner`, `Manager`, `Manager+` or `Technician`. The record stores the third as `MANAGER_PLUS`; the comment shows `Manager+`. The same form serves a first assignment, a swap and a recall. **(c)** Add one comment per action: an action that reaches the system more than once — a double tap, a retry, a redelivered event — still adds one. **(d)** Do this for every service ticket, restore and shifting alike. | **(a)** Write anything while the ticket sits unclaimed. **(b)** Add two comments for one action. **(c)** Stay silent on a real action because the person assigned happens to be unchanged. |
 
 | AC | Given / When / Then | Verifies | Status |
 |---|---|---|---|
-| AC-R1-1 | **Given** restore ticket `1789100000000000` with no assignment comment on it, **When** CSP Ramesh Kumar accepts the job at 09:31, **Then** one comment is added to that Kapture ticket reading `Ticket assigned — Ramesh Kumar (Owner)`. | R1a · R1b | Settled |
+| AC-R1-1 | **Given** restore ticket `1789100000000000` with no assignment comment on it, **When** Ramesh Kumar, the Owner on that CSP, accepts the ticket at 09:31, **Then** one comment is added to that Kapture ticket reading `Ticket assigned — Ramesh Kumar (Owner)`. | R1a · R1b | Settled |
 | AC-R1-2 | **Given** ticket `1789100000000000` carrying one comment reading `Ticket assigned — Ramesh Kumar (Owner)` from 09:31, **When** Ramesh assigns technician Imran Sheikh at 09:48, **Then** a further comment is added reading `Ticket assigned — Imran Sheikh (Technician)`. | R1a · R1b | Settled |
 | AC-R1-3 | **Given** ticket `1789100000000000` with Imran named on the newest comment, **When** Ramesh swaps the job to technician Vikas Yadav at 11:02, **Then** a further comment is added reading `Ticket assigned — Vikas Yadav (Technician)`. | R1a | Settled |
 | AC-R1-4 | **Given** ticket `1789100000000000` with Imran named on the newest comment, **When** Ramesh recalls the job off Imran at 11:02 and takes it himself, **Then** a further comment is added reading `Ticket assigned — Ramesh Kumar (Owner)`. | R1a · R1b | Settled |
 | AC-R1-5 | **Given** shifting ticket `1789100000000001` with no assignment comment on it, **When** Ramesh assigns technician Imran Sheikh to it at 09:48, **Then** a comment is added reading `Ticket assigned — Imran Sheikh (Technician)` — the same form as on a restore ticket. | R1d | Settled |
 | AC-R1-6 | **Given** ticket `1789100000000000` open and unclaimed since 09:14, **When** two hours pass with no CSP action, **Then** no assignment comment exists on that Kapture ticket. | R1 MUST NOT (a) · G3 | Settled |
 | AC-R1-7 | **Given** Imran was named on a comment at 09:31, **When** Ramesh assigns Imran again at 11:40 as a fresh action, **Then** a further comment reading `Ticket assigned — Imran Sheikh (Technician)` is added — an unchanged person is not a reason for silence. | R1c · R1 MUST NOT (c) | Settled |
-| AC-R1-9 | **Given** restore ticket `1789100000000002` with no assignment comment on it, and Sunil Rao recorded as `MANAGER_PLUS` on his user record, **When** Sunil takes the ticket himself at 10:05, **Then** one comment is added reading `Ticket assigned — Sunil Rao (Manager+)`. | R1b | Settled |
 | AC-R1-8 | **Given** ticket `1789100000000000` already resolved in Kapture at 12:15, **When** a swap to Vikas Yadav made at 12:14 reaches this feature at 12:18, **Then** the comment is still added, reading `Ticket assigned — Vikas Yadav (Technician)`. ⚠️ *AI GENERATED — review* | R1a | Settled |
+| AC-R1-9 | **Given** restore ticket `1789100000000002` with no assignment comment on it, and Sunil Rao recorded as `MANAGER_PLUS` on his user record, **When** Sunil takes the ticket himself at 10:05, **Then** one comment is added reading `Ticket assigned — Sunil Rao (Manager+)`. | R1b | Settled |
 
 ### R2 — Trust the newest comment
 
@@ -68,11 +68,11 @@ It also leaves unchanged the **blind window before anyone is assigned**. A resto
 flowchart TD
     A["CSP assign action: takes the job, assigns a technician, swaps technician, or recalls"] --> B{"Is this the same action reaching us again?"}
     B -- "Yes" --> C["Nothing added — R1c"]
-    B -- "No" --> D{"Can the assigned person's name and role be resolved?"}
+    B -- "No" --> D{"Can the assignee's name and designation be resolved?"}
     D -- "No" --> E["Nothing added — outside this spec, §1 Boundary"]
     D -- "Yes" --> F{"Is the Kapture ticket known for this job?"}
     F -- "No" --> G["Nothing added — outside this spec, §1 Boundary"]
-    F -- "Yes" --> H["Comment added naming the person and role — R1a, R1b"]
+    F -- "Yes" --> H["Comment added naming the person and designation — R1a, R1b"]
     H --> I{"Did the push to Kapture succeed?"}
     I -- "Yes" --> J["Comment visible on the ticket — R1a"]
     I -- "No" --> K["Dropped, not retried — R1a, AC-FAIL-1"]
@@ -128,8 +128,8 @@ No state management: behaviour is fully specified by §2 and the flow chart abov
 
 | Term | Meaning | Owner (domain) |
 |---|---|---|
-| Assignee | The person a CSP has put on the job — either the CSP himself, or a technician he assigned. One at a time per ticket. | CSP execution |
-| Assign action | Any CSP action that sets or changes the assignee: taking the job himself, assigning a technician, swapping to a different technician, or recalling it off one. | CSP execution |
+| Assignee | The person working the ticket — either a user on the CSP who took it themselves (an Owner, Manager or Manager+), or a technician one of them assigned. One at a time per ticket. | CSP execution |
+| Assign action | Any action on the CSP side that sets or changes the assignee: a user taking the ticket themselves, assigning a technician, swapping to a different technician, or recalling it off one. | CSP execution |
 | Assignment comment | The comment this feature adds to a Kapture ticket, naming the assignee and their role. The only thing this feature writes anywhere. | — |
 | Call-centre agent | The person handling a customer call in Kapture. Reads the ticket; does not work the job. | Support/Ops |
 | Designation | What the assignee is, taken from their own user record: Owner, Manager, Manager+ or Technician. A CSP is an organisation, not one person — its Owner, Managers and Managers+ can each take a ticket — so the comment names the individual's designation rather than a blanket word for the firm. | CSP execution |
