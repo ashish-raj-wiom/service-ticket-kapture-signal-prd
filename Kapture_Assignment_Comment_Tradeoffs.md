@@ -1,7 +1,9 @@
-# Kapture Assignment Comment — tradeoff log
+# Kapture Assignment Comment — tradeoffs register
 
-Running log from the interview of 18 Sep 2026. Becomes the tradeoffs register at finalise.
-Every row is a decision Ashish made against options that were put to him.
+The decisions behind the PRD, signed off 21 Sep 2026. Every row is a decision Ashish made
+against options that were put to him, with the reason he gave. Kept beside the PRD, not inside
+it: when someone asks in six months why the comment names a designation rather than the firm,
+or why a dropped push is never retried, the answer is here without archaeology.
 
 | # | Decision point | Chosen | Rejected options | Why (PM's stated reason) | Date |
 |---|---|---|---|---|---|
@@ -12,6 +14,9 @@ Every row is a decision Ashish made against options that were put to him.
 | 5 | Shifting tickets | **Included** | Excluded to match the chat PRD; included with its own wording | The chat PRD excluded shifting because the customer copy was complaint-framed. An internal agent comment carries no such wording, so the reason did not transfer — and shifting has the worse blind window. | 18 Sep 2026 |
 | 6 | The push to Kapture fails | **Best effort — one attempt, dropped, nothing recorded** | Retry until it lands; retry and raise on exhaustion; retry and record against the ticket | An agent-facing comment does not warrant retry and recovery engineering. **Recorded as an Override**: a dropped comment is invisible, and AC-GRD-3 cannot tell one from an action that never happened. | 18 Sep 2026 |
 | 7 | One action arriving twice, and the same person assigned again | **Same rule as the chat PRD** — one comment per action; a genuine re-assign of the same person still comments | Suppress by person; no suppression at all | Keeps the two specs consistent, so an engineer reading both finds one rule rather than two. | 18 Sep 2026 |
+| 8 | The word for the work item in the comment | **Ticket** — `Ticket assigned — …` | `Job assigned — …` | "Job" is CSP-side language for the work item in TAS. The agent reading the comment is looking at a Kapture ticket. | 21 Sep 2026 |
+| 9 | How the assignee is described | **Their own designation** — Owner, Manager, Manager+ or Technician, from gateway `csp_users` | `Partner` for anyone on the CSP side | "Partner" flattens an organisation into one person. A CSP has an Owner, Managers and Managers+, any of whom can take a ticket, and the agent should see which. | 21 Sep 2026 |
+| 10 | A comment whose action happened before the ticket closed, arriving after | **Added anyway** | Dropped once the ticket is resolved | Keeps the record complete; dropping it loses the trail. Confirmed at finalise. | 21 Sep 2026 |
 
 ## Measurements the decisions were made against
 
@@ -37,6 +42,6 @@ Taken 18 Sep 2026 from the TAS execution-candidate data in the warehouse, 30-day
 | **Correction to the brief:** SRS *does* receive a first-response signal. `ES_RESTORE_FIRST_RESPONSE_RECORDED` fires on the first of `ACCEPT_TASK` or `ASSIGN_TECHNICIAN` and stamps `first_response_at` | `csp-support-resolution-service/…/api/InboundEventController.java:175` |
 | But it fires **once per job** and carries `triggering_action` with **no person** — so it cannot serve the comment's name, nor any later action | `…/domain/event/inbound/EsRestoreFirstResponseRecorded.java` |
 | Only `EsRestoreTechnicianAssigned` carries `ticketId`. The accepted and recalled events carry none | `csp-tas-service/…/restore/domain/event/outbound/*.java` |
-| Both assign events have exactly one consumer today — csp-notification-service, which turns them into CleverTap events | `csp-notification-service/…/translate/EventTranslator.java` |
+| All three assign events are consumed today by csp-notification-service and nothing else — a swap included, since `EsRestoreTechnicianAssigned` fires on one. Nothing forwards any of them toward Kapture | `csp-notification-service/…/translate/EventTranslator.java` |
 | `ADD_COMMENT` already exists and takes `comment`, `ticket_id` and `sub_status`; an empty `sub_status` leaves the ticket's sub-status untouched | `ticket-service-java/…/service/handler/impl/AddCommentHandler.java` |
 | ticket-service has no concept of a restore technician; `ASSIGN_TICKET` is CC→Partner queue routing, not this | `ticket-service-java/…/util/KaptureQueueMessageKey.java` |

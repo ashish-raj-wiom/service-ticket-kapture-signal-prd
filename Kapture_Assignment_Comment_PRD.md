@@ -2,14 +2,14 @@
 
 | | | | |
 |---|---|---|---|
-| **Owner** — Ashish Raj (PM) | **Reviewer** — [TBD — not asked] | **Status** — Draft | **Sign-off** — Pending |
-| **Version** — v0.1 · 18 Sep 2026 | **Consulted — [TBD — not asked]** | **Consulted — [TBD — not asked]** | |
+| **Owner** — Ashish Raj (PM) | **Reviewer** — Akash | **Status** — Signed off | **Sign-off** — Signed off · 21 Sep 2026 |
+| **Version** — v1.0 · 21 Sep 2026 | **Consulted** — Akash | | |
 
 ---
 
 ## 1. Objective & Guardrails
 
-**Objective.** A call-centre agent taking a callback can tell the customer who is working on their ticket, without phoning the CSP to find out. ⚠️ *AI GENERATED — review*
+**Objective.** A call-centre agent taking a callback can tell the customer who is working on their ticket, without phoning the CSP to find out.
 
 **Boundary.** This spec governs a comment added to the Kapture ticket each time someone on the CSP is put on the ticket — a user taking it themselves, a technician assigned, a different technician swapped in, or the ticket taken back off one. It covers both task families, restore and shifting.
 
@@ -33,7 +33,7 @@ It also leaves unchanged the **blind window before anyone is assigned**. A resto
 
 | ID | Story | MUST | MUST NOT |
 |---|---|---|---|
-| R1 | As a call-centre agent handling a callback, I want the ticket to tell me who is working on it, so that I can answer the customer instead of phoning the CSP. | **(a)** Add a comment to the Kapture ticket on every assign action — a user on the CSP taking the ticket themselves, assigning a technician, swapping to a different technician, or recalling it off one. **(b)** Write the comment in one fixed form — `Ticket assigned — <name> (<designation>)` ⚠️ *AI GENERATED — review* — where designation is the assignee's own, taken from their user record: `Owner`, `Manager`, `Manager+` or `Technician`. The record stores the third as `MANAGER_PLUS`; the comment shows `Manager+`. The same form serves a first assignment, a swap and a recall. **(c)** Add one comment per action: an action that reaches the system more than once — a double tap, a retry, a redelivered event — still adds one. **(d)** Do this for every service ticket, restore and shifting alike. | **(a)** Write anything while the ticket sits unclaimed. **(b)** Add two comments for one action. **(c)** Stay silent on a real action because the person assigned happens to be unchanged. |
+| R1 | As a call-centre agent handling a callback, I want the ticket to tell me who is working on it, so that I can answer the customer instead of phoning the CSP. | **(a)** Add a comment to the Kapture ticket on every assign action — a user on the CSP taking the ticket themselves, assigning a technician, swapping to a different technician, or recalling it off one. **(b)** Write the comment in one fixed form — `Ticket assigned — <name> (<designation>)` — where designation is the assignee's own, taken from their user record: `Owner`, `Manager`, `Manager+` or `Technician`. The record stores the third as `MANAGER_PLUS`; the comment shows `Manager+`. The same form serves a first assignment, a swap and a recall. **(c)** Add one comment per action: an action that reaches the system more than once — a double tap, a retry, a redelivered event — still adds one. **(d)** Do this for every service ticket, restore and shifting alike. | **(a)** Write anything while the ticket sits unclaimed. **(b)** Add two comments for one action. **(c)** Stay silent on a real action because the person assigned happens to be unchanged. |
 
 | AC | Given / When / Then | Verifies | Status |
 |---|---|---|---|
@@ -44,7 +44,7 @@ It also leaves unchanged the **blind window before anyone is assigned**. A resto
 | AC-R1-5 | **Given** shifting ticket `1789100000000001` with no assignment comment on it, **When** Ramesh assigns technician Imran Sheikh to it at 09:48, **Then** a comment is added reading `Ticket assigned — Imran Sheikh (Technician)` — the same form as on a restore ticket. | R1d | Settled |
 | AC-R1-6 | **Given** ticket `1789100000000000` open and unclaimed since 09:14, **When** two hours pass with no CSP action, **Then** no assignment comment exists on that Kapture ticket. | R1 MUST NOT (a) · G3 | Settled |
 | AC-R1-7 | **Given** Imran was named on a comment at 09:31, **When** Ramesh assigns Imran again at 11:40 as a fresh action, **Then** a further comment reading `Ticket assigned — Imran Sheikh (Technician)` is added — an unchanged person is not a reason for silence. | R1c · R1 MUST NOT (c) | Settled |
-| AC-R1-8 | **Given** ticket `1789100000000000` already resolved in Kapture at 12:15, **When** a swap to Vikas Yadav made at 12:14 reaches this feature at 12:18, **Then** the comment is still added, reading `Ticket assigned — Vikas Yadav (Technician)`. ⚠️ *AI GENERATED — review* | R1a | Settled |
+| AC-R1-8 | **Given** ticket `1789100000000000` already resolved in Kapture at 12:15, **When** a swap to Vikas Yadav made at 12:14 reaches this feature at 12:18, **Then** the comment is still added, reading `Ticket assigned — Vikas Yadav (Technician)`. | R1a | Settled |
 | AC-R1-9 | **Given** restore ticket `1789100000000002` with no assignment comment on it, and Sunil Rao recorded as `MANAGER_PLUS` on his user record, **When** Sunil takes the ticket himself at 10:05, **Then** one comment is added reading `Ticket assigned — Sunil Rao (Manager+)`. | R1b | Settled |
 
 ### R2 — Trust the newest comment
@@ -157,21 +157,6 @@ What the platform must be able to do for this feature to exist. Whether these ar
 | Do all of the above for a shifting job as well as a restore one. | R1d · AC-R1-5 |
 
 ---
-
-## AI-generated content for review
-
-| Location (section · ID) | What was generated | Basis |
-|---|---|---|
-| §1 · Objective | "without phoning the CSP to find out" | Put to you as a proposed objective and not corrected. The feature you described is the comment; the outcome behind it — the agent stops chasing — is inferred. |
-| §2 · R1b | The comment's fixed form, `Ticket assigned — <name> (<designation>)` | You said the comment must carry name and role, and you set the four designations. The sentence shape is mine, including showing `MANAGER_PLUS` as `Manager+`. |
-| §2 · AC-R1-8 | A comment whose action preceded closure is still added after the ticket is resolved in Kapture | You chose "every assignment comments" and said nothing about a ticket already closed. Adding keeps the record complete; the alternative is dropping it, which loses the trail. |
-
-## Not asked
-
-| Location (section · ID) | What was never asked |
-|---|---|
-| Header · Reviewer | Which engineering lead reviews this. |
-| Header · Consulted | Which domains must be consulted — Support/Ops for the Kapture side, CSP execution for the event side. |
 
 ## Overrides
 
